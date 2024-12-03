@@ -1,5 +1,8 @@
 import argparse
 import time
+from operator import add
+from itertools import accumulate
+from tqdm import tqdm
 
 
 def read_file(fname):
@@ -12,32 +15,45 @@ def read_file(fname):
     return [int(x) for x in data[0]]
 
 
-def part_1(data, phases, pattern):
+def fft(data, phases):
+    pattern = [0, 1, 0, -1]
     n_d = len(data)
     n_p = len(pattern)
     current = data
-    for _ in range(phases):
-        next = [0, ] * len(current)
+    next = [0, ] * len(current)
+    for _ in tqdm(range(phases)):
         for i in range(n_d):
             total = 0
-            for x in range(n_d):
-                total += current[x] * pattern[(x + 1) // (i + 1) % n_p]
-            next[i] = int(str(total)[-1])
+            for j in range(n_d - i):
+                x = current[i + j]
+                index = ((i + j + 1) // (i + 1)) % n_p
+                total += x * pattern[index]
+            next[i] = abs(total) % 10
         current = next
     return current
 
 
+def part_1(data):
+    result = fft(data, 100)
+    return ''.join([str(x) for x in result[:8]])
+
+
 def part_2(data):
-    pass
+    offset = int(''.join(map(str, data[:7])))
+    data = (data * 10_000)[offset:]
+    data = data[::-1]  # inverse for fast calculation
+    for _ in tqdm(range(100)):
+        data = [abs(x) % 10 for x in accumulate(data, add)]
+    data = data[::-1]
+    return ''.join([str(x) for x in data[:8]])
 
 
 def main(fname):
     start = time.time()
     data = read_file(fname)
-    total_1 = part_1(data, 100, [0, 1, 0 ,-1])
+    total_1 = part_1(data)
     t1 = time.time()
-    print(len(data))
-    print(f"Part 1: {''.join([str(x) for x in total_1[:8]])}")
+    print(f"Part 1: {total_1}")
     print(f"Ran in {t1-start} s")
     total_2 = part_2(data)
     print(f"Part 2: {total_2}")
