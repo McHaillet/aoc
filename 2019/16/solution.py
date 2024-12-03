@@ -12,7 +12,7 @@ def read_file(fname):
             strip = line.strip()
             if strip != "":
                 data.append(strip)
-    return [int(x) for x in data[0]]
+    return list(int(x) for x in data[0])
 
 
 def fft(data, phases):
@@ -35,7 +35,7 @@ def fft(data, phases):
 
 def part_1(data):
     result = fft(data, 100)
-    return ''.join([str(x) for x in result[:8]])
+    return ''.join(map(str, result[:8]))
 
 
 def part_2(data):
@@ -45,7 +45,7 @@ def part_2(data):
     for _ in tqdm(range(100)):
         data = [abs(x) % 10 for x in accumulate(data, add)]
     data = data[::-1]
-    return ''.join([str(x) for x in data[:8]])
+    return ''.join(map(str, data[:8]))
 
 
 def main(fname):
