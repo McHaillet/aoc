@@ -1,2 +1,2 @@
-*/*/*.txt   # all the example and input text files
-.idea/      # pycharm stuff
+*/*/*.txt  
+.idea/     
