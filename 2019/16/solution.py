@@ -41,7 +41,7 @@ def part_1(data):
 def part_2(data):
     offset = int(''.join(map(str, data[:7])))
     data = (data * 10_000)[offset:]
-    data = data[::-1]  # inverse for fast calculation
+    data = data[::-1]  # inverse to skip all the annoying steps
     for _ in tqdm(range(100)):
         data = [abs(x) % 10 for x in accumulate(data, add)]
     data = data[::-1]
