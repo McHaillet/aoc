@@ -1,10 +1,10 @@
 
 class Guard:
-    def __init__(self, x, y, rot=0):
+    def __init__(self, x, y):
         self.x = x
         self.y = y
         # direction of guard
-        self.rot = rot # ^ is 0, > is 1, v is 2, < is 3
+        self.rot = 0 # ^ is 0, > is 1, v is 2, < is 3
 
     def next(self):
         match self.rot:
@@ -53,23 +53,22 @@ rot_to_check = {
 def loop(guard, obstructions):
     visited = set()
     while True:
-        # we just moved to an obstacle so rotate first
-        guard.rotate()
         rot = guard.rot
-        vec = (guard.x, guard.y, rot)
-        if vec in visited:
+        vec = (guard.x, guard.y)
+        if (vec, rot) in visited:
             return True
         else:
-            visited.add(vec)
-        options = [o for o in obstructions if rot_to_check[rot](vec[:2], o)]
+            visited.add((vec, rot))
+        options = [o for o in obstructions if rot_to_check[rot](vec, o)]
         if len(options) == 0:
             return False  # no obstacle in front of guard -> moves out of bounds
         elif len(options) > 1:
-            options.sort(key=lambda t: t[rot % 2], reverse=rot in (0, 3))
+            options.sort(key=lambda t: abs(t[rot % 2] - vec[rot % 2]))
+            # options.sort(key=lambda t: t[rot % 2], reverse=rot in (0, 3))
         new = list(options[0])
         # update guard, but don't place on top of obstacle
         new[rot % 2] = new[rot % 2] + (1 if rot in (0, 3) else -1)
-        guard.x, guard.y = new
+        guard.x, guard.y = new; guard.rotate()
 
 def part_2(data):
     new_obstacles = set()
@@ -81,10 +80,10 @@ def part_2(data):
             guard.rotate()
         else:
             # each location-rotation combo is possible location
-            if loop(Guard(guard.x, guard.y, guard.rot), obstructions + [step, ]):
+            if loop(Guard(*start), obstructions + [step,]):
                 new_obstacles.add(step)
             guard.x, guard.y = step
-    # new_obstacles.discard(start)  # start is never allowed
+    new_obstacles.discard(start)  # start is never allowed
     return len(new_obstacles)
 
 
