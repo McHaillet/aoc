@@ -38,7 +38,6 @@ def part_2(data):
     antinodes = set()
     antennae, bounds = data
     for t in antennae.keys():
-        antinodes.update(antennae[t])
         for points in combinations(antennae[t], 2):
             p1, p2 = points
             # my input never had vertical lines so this works
