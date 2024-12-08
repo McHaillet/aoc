@@ -39,14 +39,11 @@ def part_2(data):
     antennae, bounds = data
     for t in antennae.keys():
         antinodes.update(antennae[t])
-        if len(antennae[t]) == 1:
-            continue  # does not happen in my input
-        antinodes.update(antennae[t])
         for points in combinations(antennae[t], 2):
             p1, p2 = points
-            if p1.real == p2.real:  # does not happen in my input
-                raise ValueError("assume no vertical lines for simplicity")
+            # my input never had vertical lines so this works
             dx = p1 - p2  # find line eq.
+            a = dx.imag / dx.real
             b = p1.imag - a * p1.real
             f = lambda x: a * x + b
             for x in range(bounds[0]):  # calculate all intersections with grid
