@@ -46,7 +46,7 @@ def part_2(data):
     nrows = len(data)
     ncols = len(data[0])
     counter = 0
-    positions = [-1 - 1j, -1 + 1j, 1 + 1j, 1 - 1j]
+    positions = [-1 - 1j, -1 + 1j, 1 + 1j, 1 - 1j]  # order is very important
     letters = ['M', 'M', 'S', 'S']
     for start in As:
         for direction in (0, 1, 2, 3):  # the M and S can be in 4 orientations around the A
