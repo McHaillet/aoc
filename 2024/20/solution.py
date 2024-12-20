@@ -28,7 +28,8 @@ while True:
         if 0 < nx < nrows - 1 and 0 < ny < ncols - 1 and maze[nx][ny] in ['.', 'E']:
             q.put((nx, ny))
 
-# now try to cheat along the route
+# each cheat is just a cut in the current route that is restricted by
+# a distance (d)
 def find_cheats(d):
     nsteps = len(route)
     cheats = 0
