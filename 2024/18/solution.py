@@ -28,14 +28,13 @@ def find_path(n):
 
 print(f"part 1 = {find_path(N)}")
 
-# should bisect !!
+# use bisection !!
 i, j, k = N, M, (N + M) // 2
 while k != i:
-    print(k)
     try:
         _ = find_path(k)
         i = k
     except IndexError:
         j = k
     k = (i + j) // 2
-print(f"part 2 = {B[k]}")
+print(f"part 2 = {B[k][0]},{B[k][1]}")
