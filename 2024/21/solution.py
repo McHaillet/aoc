@@ -25,6 +25,11 @@ vdict = {-1: '^', 1: 'v'}
 r0 = (3, 2)
 r1 = (0, 2)
 
+# get_num_path and get_dir_path calculate possible paths over the pad from a start pos
+# of the robot arm to the symbol that needs to be pressed. Critically,
+# I only consider paths where symbols are chained as I assume that is always most
+# efficient. Secondly, paths are excluded that move over the '.' position because
+# that is not allowed.
 def get_num_path(pos, symbol):
     x, y = pos
     nx, ny = key_dict[symbol]
