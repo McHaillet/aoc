@@ -1,95 +1,98 @@
-from collections import deque
+import heapq
+import functools
 from itertools import product
 
 codes = open(0).read().strip().split('\n')
 
 keypad = ["789", "456", "123", '.0A']
-kdim = (4, 3)
-dirpad = [".^A", "<v>"]
-ddim = (2, 3)
+key_dict = dict()
+for i, r in enumerate(keypad):
+    for j, c in enumerate(r):
+        if c != '.':
+            key_dict[c] = (i ,j)
 
-ddict = {'^': (-1, 0), 'v': (1, 0), '<': (0, -1), '>': (0, 1)}
+dirpad = [".^A", "<v>"]
+dir_dict = dict()
+for i, r in enumerate(dirpad):
+    for j, c in enumerate(r):
+        if c != '.':
+            dir_dict[c] = (i, j)
+
+hdict = {-1: '<', 1: '>'}
+vdict = {-1: '^', 1: 'v'}
 
 # start position of each robot
-r1 = (3, 2)
-r2 = (0, 2)
-r3 = (0, 2)
+r0 = (3, 2)
+r1 = (0, 2)
 
-def get_paths(sequence, robot_start, pad, pdim):
-    start = robot_start
-    R = list()
-    for c in sequence:
-        routes = list()
-        shortest = None
-        q = deque([(start, list(), list())])
-        while len(q) > 0:
-            p, r, b = q.popleft()  # position, route, buttons
-            x, y = p
-            if pad[x][y] == c:
-                b += ['A']
-                if shortest is None:
-                    shortest = len(b)
-                    start = p
-                else:
-                    if len(b) > shortest: continue
-                routes += [b]
-                continue
-            if p in r:
-                continue
-            r += [p]
-            for key, d in ddict.items():
-                dx, dy = d
-                nx, ny = x + dx, y + dy
-                if (0 <= nx < pdim[0] and 0 <= ny < pdim[1]
-                        and pad[nx][ny] !='.'):
-                    q.append(((nx, ny), r.copy(), b + [key]))
-        R += [(c, routes)]
-    return R
+def get_num_path(pos, symbol):
+    x, y = pos
+    nx, ny = key_dict[symbol]
+    dx, dy = nx - x, ny - y
+    vm = vdict[dx // abs(dx)] * abs(dx) if abs(dx) > 0 else ''
+    hm = hdict[dy // abs(dy)] * abs(dy) if abs(dy) > 0 else ''
+    if abs(dx) == 0 or abs(dy) == 0:
+        return [hm + vm + 'A']
+    elif (x + dx, y) == (3, 0):
+        return [hm + vm + 'A']
+    elif (x, y + dy) == (3, 0):
+        return [vm + hm + 'A']
+    else:
+        return [hm + vm + 'A', vm + hm + 'A']
+
+def get_dir_path(pos, symbol):
+    x, y = pos
+    nx, ny = dir_dict[symbol]
+    dx, dy = nx - x, ny - y
+    vm = vdict[dx // abs(dx)] * abs(dx) if abs(dx) > 0 else ''
+    hm = hdict[dy // abs(dy)] * abs(dy) if abs(dy) > 0 else ''
+    if abs(dx) == 0 or abs(dy) == 0:
+        return [hm + vm + 'A']
+    elif (x + dx, y) == (0, 0):
+        return [hm + vm + 'A']
+    elif (x, y + dy) == (0, 0):
+        return [vm + hm + 'A']
+    else:
+        return [hm + vm + 'A', vm + hm + 'A']
+
+# recursively find the shortest path on the direction pad
+# each seq only contains one A at the end because we can always recurse over those
+@functools.cache
+def shortest_seq(seq, robots):
+    if robots == 0:
+        return len(seq)
+    size = 0
+    start = r1
+    for c in seq:
+        ps = get_dir_path(start, c)
+        size += min(shortest_seq(p, robots - 1) for p in ps)
+        start = dir_dict[c]
+    return size
+
+# util for fixing trailing zeros in the code
+def fix(x):
+    if x.startswith('0'):
+        return fix(x[1:])
+    return int(x)
 
 total = 0
 for code in codes:
-    x = get_paths(code, r1, keypad, kdim)
-    seqs = []
-    for y in product(*(r[1] for r in x)):
-        seqs += [''.join(sum(y, []))]
+    size = 0
+    start = r0
+    for c in code:
+        ps = get_num_path(start, c)
+        size += min(shortest_seq(p, 2) for p in ps)
+        start = key_dict[c]
+    total += size * fix(code[:-1])
+print(f"part 1 = {total}")
 
-    # print(seqs[0])
-
-    nseqs = []
-    for s in seqs:
-        x = get_paths(s, r2, dirpad, ddim)
-        for y in product(*(r[1] for r in x)):
-            nseqs += [''.join(sum(y, []))]
-
-    # print(nseqs[0])
-
-    nnseqs = []
-    for s in nseqs:
-        x = get_paths(s, r2, dirpad, ddim)
-        for y in product(*(r[1] for r in x)):
-            nnseqs += [''.join(sum(y, []))]
-
-    def fix(x):
-        if x.startswith('0'):
-            return fix(x[1:])
-        return int(x)
-
-    # print(nnseqs[0])
-    N = list(len(x) for x in nnseqs)
-    total += (min(N) * fix(code[:-1]))
-
-print(total)
-# OBSERVATIONS
-# 1. the set of button presses for each shortest path is always the same
-# 2. the solutions where multiple keys are chained together might be best
-# > however, finding the shortest path and then reordering the key wont work due to the
-# dead section on each pad
-# Penalize solutions with lots of variation?
-
-# for k, v in x:
-#     for l in v:
-#         print(f"path {l}")
-#         y = get_paths(l, r2, dirpad, ddim)
-#         print(y)
-#         print(sum(len(j[0]) for i, j in y))
-#     print('\n')
+total = 0
+for code in codes:
+    size = 0
+    start = r0
+    for c in code:
+        ps = get_num_path(start, c)
+        size += min(shortest_seq(p, 25) for p in ps)
+        start = key_dict[c]
+    total += size * fix(code[:-1])
+print(f"part 2 = {total}")
