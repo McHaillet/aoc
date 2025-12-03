@@ -1,3 +1,4 @@
+from pathlib import Path
 
 def read(file):
     with open(file) as f:
@@ -19,6 +20,8 @@ def run(file):
 def main():
     files = ("example.txt", "input.txt")
     for f in files:
+        if not Path(f).exists():
+            continue
         print(f"Results for {f}...")
         run(f)
 
