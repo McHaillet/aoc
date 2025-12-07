@@ -9,7 +9,6 @@ def read(file):
 
 def solve(d):
     nr = len(d)
-    nc = len(d[0])
     beams = {d[0].index('S'): 1}
     splits = 0
     for i in range(2, nr, 2):
