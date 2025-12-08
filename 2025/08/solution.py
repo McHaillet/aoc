@@ -46,13 +46,13 @@ def solve(data):
             if p1 in x and p2 in x:
                 break
             if p1 in x or p2 in x:
-                if p2 in x:
+                if p2 in x:  # reorder so we can run same code twice
                     p1, p2 = p2, p1
                 for j in range(len(circuits)):
                     y = circuits[j]
                     if p2 in y:
                         z = x.union(y)
-                        if j > i:
+                        if j > i:  # swap so we pop largest index first
                             i, j = j, i
                         circuits.pop(i)
                         circuits.pop(j)
